@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIR Filing Assistant — India</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0F1419;--bg2:#161D26;--bg3:#1C2532;--bg4:#212C3D;
+  --surface:#1A2232;--surface2:#202A3A;
+  --text:#E8EDF2;--text2:#B8C5D0;--text3:#7A8FA0;
+  --saffron:#E8A020;--saffron2:#F0B030;--saffron-dim:#2A1F08;
+  --green:#2ECC71;--green-dim:#0A2018;
+  --blue:#4A9EDB;--blue-dim:#0A1828;
+  --red:#E05050;--red-dim:#200A0A;
+  --gold:#D4A030;--gold-dim:#1E1408;
+  --border:#2A3848;--border2:#344558;
+  --r:4px;--rl:6px;
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;font-size:15px}
+
+/* ── Header ── */
+header{background:var(--bg2);border-bottom:3px solid var(--saffron);position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:.85rem 2rem;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:14px}
+
+/* Bridge + Scales SVG logo */
+.logo-emblem{width:52px;height:52px;flex-shrink:0}
+
+.logo-text h1{font-size:18px;font-weight:600;color:var(--text);font-family:'EB Garamond',serif;letter-spacing:.3px}
+.logo-text p{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:2px;letter-spacing:.5px}
+.header-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.header-badge{font-size:10px;padding:3px 10px;border-radius:2px;background:var(--bg4);color:var(--text3);font-family:'IBM Plex Mono',monospace;border:1px solid var(--border2);letter-spacing:.5px}
+.header-emergency{font-size:11px;color:var(--red);font-weight:600;font-family:'IBM Plex Mono',monospace}
+.header-strip{background:var(--bg3);padding:5px 2rem;display:flex;align-items:center;justify-content:center;gap:20px;border-bottom:1px solid var(--border)}
+.strip-item{font-size:10px;color:var(--text3);letter-spacing:.8px;font-family:'IBM Plex Mono',monospace}
+.strip-sep{color:var(--border2);font-size:12px}
+
+/* ── Layout ── */
+.app{display:flex;flex:1;height:calc(100vh - 90px);overflow:hidden}
+
+/* ── Left Panel ── */
+.ref-panel{width:290px;min-width:290px;background:var(--bg2);border-right:2px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.panel-header{background:var(--bg3);color:var(--saffron);padding:.65rem 1rem;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;border-bottom:1px solid var(--border)}
+.ref-tabs{display:flex;border-bottom:2px solid var(--border);background:var(--bg3)}
+.rtab{flex:1;padding:9px 6px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:.15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;text-transform:uppercase}
+.rtab.on{color:var(--saffron);border-bottom-color:var(--saffron);background:var(--bg2)}
+.ref-content{padding:.75rem;flex:1}
+.ref-section{display:none}.ref-section.on{display:block}
+.rcard{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--r);padding:.7rem .85rem;margin-bottom:6px;cursor:pointer;transition:all .15s}
+.rcard:hover{border-left-color:var(--saffron);background:var(--bg4)}
+.rcard.open{border-left-color:var(--saffron);background:var(--bg4)}
+.rcard-term{font-size:15px;font-weight:600;color:var(--saffron);font-family:'EB Garamond',serif}
+.rcard-meaning{font-size:12px;color:var(--text3);margin-top:2px;font-style:italic}
+.rcard-body{font-size:13px;color:var(--text2);margin-top:8px;line-height:1.7;display:none;border-top:1px solid var(--border);padding-top:8px}
+.rcard.open .rcard-body{display:block}
+.right-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:2px;margin-bottom:4px;display:inline-block;letter-spacing:.5px;font-family:'IBM Plex Mono',monospace}
+.rb-fund{background:var(--saffron-dim);color:var(--saffron);border:1px solid #4A3010}
+.rb-arrest{background:var(--blue-dim);color:var(--blue);border:1px solid #1A3A5A}
+.rb-fir{background:var(--green-dim);color:var(--green);border:1px solid #1A4A30}
+.right-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;font-family:'EB Garamond',serif;line-height:1.4}
+.right-desc{font-size:12px;color:var(--text2);line-height:1.7}
+.divider{border:none;border-top:1px solid var(--border);margin:10px 0}
+.sec-group-title{font-size:10px;font-weight:600;letter-spacing:1px;margin-bottom:5px;padding:4px 6px;background:var(--bg3);color:var(--text3);border-radius:2px;border-left:2px solid var(--saffron)}
+.sec-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border)}
+.sec-label{font-size:12px;color:var(--text2);flex:1;line-height:1.4}
+.sec-tags{display:flex;gap:3px;flex-shrink:0;margin-left:6px}
+
+/* ── Chat ── */
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.chat-messages{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:16px}
+.chat-messages::-webkit-scrollbar{width:5px}
+.chat-messages::-webkit-scrollbar-track{background:var(--bg)}
+.chat-messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* Welcome */
+.welcome{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--saffron);border-radius:var(--rl);padding:1.5rem;max-width:700px;margin:0 auto;width:100%;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.welcome-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.welcome h2{font-size:22px;font-weight:600;color:var(--text);font-family:'EB Garamond',serif}
+.welcome-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px}
+.welcome p{font-size:14px;color:var(--text2);line-height:1.8;margin-bottom:14px}
+.steps{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.step{background:var(--bg3);border-radius:var(--r);padding:10px 12px;border:1px solid var(--border);border-left:3px solid var(--blue)}
+.step-num{font-size:10px;font-weight:600;color:var(--saffron);font-family:'IBM Plex Mono',monospace;margin-bottom:3px;letter-spacing:.5px}
+.step-text{font-size:13px;color:var(--text2);line-height:1.5}
+.starter-btns{display:flex;flex-wrap:wrap;gap:6px}
+.starter{font-size:12px;padding:6px 13px;border-radius:2px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);font-family:'IBM Plex Mono',monospace;transition:.15s;letter-spacing:.3px}
+.starter:hover{background:var(--saffron);color:var(--bg);border-color:var(--saffron);font-weight:600}
+.disclaimer-bar{background:var(--red-dim);border:1px solid #4A1A1A;border-radius:var(--r);padding:7px 12px;font-size:11px;color:var(--red);margin-bottom:14px;display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace}
+
+/* Messages */
+.msg{display:flex;gap:10px;max-width:780px}
+.msg.user{flex-direction:row-reverse;margin-left:auto}
+.msg-avatar{width:36px;height:36px;border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px}
+.msg.bot .msg-avatar{background:var(--saffron-dim);color:var(--saffron);border:1px solid #4A3010}
+.msg.user .msg-avatar{background:var(--blue-dim);color:var(--blue);border:1px solid #1A3A5A}
+.msg-bubble{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);border-top:2px solid var(--border2);padding:.9rem 1.1rem;font-size:14px;line-height:1.85;max-width:660px;box-shadow:0 1px 4px rgba(0,0,0,.2);color:var(--text2)}
+.msg.bot .msg-bubble{border-top-color:var(--blue)}
+.msg.user .msg-bubble{background:var(--blue-dim);color:var(--text);border-color:#1A3A5A;border-top-color:var(--saffron)}
+.msg-label{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:6px;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase}
+.msg.bot .msg-label{color:var(--blue)}
+.msg.user .msg-label{color:var(--saffron)}
+
+/* Legal highlights */
+.hl-bns{display:inline-block;font-size:11px;padding:1px 7px;border-radius:2px;background:var(--saffron-dim);color:var(--saffron);border:1px solid #4A3010;font-family:'IBM Plex Mono',monospace;font-weight:600;margin:1px 2px}
+.hl-ipc{display:inline-block;font-size:11px;padding:1px 7px;border-radius:2px;background:var(--bg3);color:var(--text2);border:1px solid var(--border2);font-family:'IBM Plex Mono',monospace;font-weight:600;margin:1px 2px}
+.hl-act{display:inline-block;font-size:11px;padding:1px 7px;border-radius:2px;background:var(--blue-dim);color:var(--blue);border:1px solid #1A3A5A;font-family:'IBM Plex Mono',monospace;font-weight:600;margin:1px 2px}
+.hl-article{display:inline-block;font-size:11px;padding:1px 7px;border-radius:2px;background:var(--green-dim);color:var(--green);border:1px solid #1A4A30;font-family:'IBM Plex Mono',monospace;font-weight:600;margin:1px 2px}
+
+/* FIR Draft */
+.fir-draft-wrap{margin-top:14px;border:1px solid #4A3010;border-radius:var(--r);overflow:hidden}
+.fir-draft-header{background:var(--saffron-dim);color:var(--saffron);padding:8px 12px;font-size:11px;font-weight:600;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #4A3010}
+.fir-draft{background:var(--bg3);padding:1.2rem;font-family:'EB Garamond',serif;font-size:15px;line-height:2;white-space:pre-wrap;color:var(--text);border-top:1px solid var(--border)}
+.fir-actions{display:flex;gap:8px;padding:8px 12px;background:var(--bg4);border-top:1px solid var(--border)}
+.btn-copy,.btn-print{font-size:11px;padding:5px 14px;border-radius:2px;cursor:pointer;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);transition:.15s}
+.btn-copy:hover{background:var(--green-dim);color:var(--green);border-color:#1A4A30}
+.btn-print:hover{background:var(--blue-dim);color:var(--blue);border-color:#1A3A5A}
+
+/* Typing */
+.typing{display:flex;align-items:center;gap:5px;padding:.4rem 0}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:bounce .8s infinite}
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* Input */
+.input-bar{padding:.85rem 1.5rem;border-top:2px solid var(--border);background:var(--bg2);display:flex;gap:10px;align-items:flex-end}
+.input-wrap{flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);overflow:hidden;transition:.15s;border-bottom:2px solid var(--border2)}
+.input-wrap:focus-within{border-color:var(--blue);border-bottom-color:var(--saffron)}
+#user-input{width:100%;padding:.7rem 1rem;font-size:14px;border:none;outline:none;background:transparent;font-family:'IBM Plex Sans',sans-serif;color:var(--text);resize:none;max-height:120px;line-height:1.6}
+#user-input::placeholder{color:var(--text3)}
+.send-btn{width:42px;height:42px;border-radius:var(--r);background:var(--saffron-dim);color:var(--saffron);border:1px solid var(--saffron);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:.15s;flex-shrink:0}
+.send-btn:hover{background:var(--saffron);color:var(--bg)}
+.send-btn:disabled{background:var(--bg3);color:var(--text3);border-color:var(--border);cursor:not-allowed}
+
+/* API Setup */
+.api-setup{background:var(--blue-dim);border:1px solid #1A3A5A;border-left:3px solid var(--blue);border-radius:var(--r);padding:1rem;margin-bottom:1rem}
+.api-setup p{font-size:13px;color:var(--text2);margin-bottom:8px}
+.api-setup strong{color:var(--blue)}
+.api-row{display:flex;gap:8px}
+.api-row input{flex:1;padding:8px 10px;border-radius:var(--r);border:1px solid #1A3A5A;background:var(--bg3);font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);outline:none}
+.api-row input:focus{border-color:var(--blue)}
+.api-row input::placeholder{color:var(--text3)}
+.api-row button{padding:8px 16px;border-radius:var(--r);background:var(--blue);color:white;border:none;cursor:pointer;font-size:12px;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;transition:.15s}
+.api-row button:hover{background:#5AB0F0}
+.disclaimer{font-size:11px;color:var(--text3);line-height:1.6;margin-top:.5rem;font-family:'IBM Plex Mono',monospace}
+
+@media(max-width:768px){.ref-panel{display:none}.steps{grid-template-columns:1fr}.header-strip{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-top">
+    <div class="logo">
+      <!-- Bridge between People and Legal System SVG Logo -->
+      <svg class="logo-emblem" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Bridge arch -->
+        <path d="M4 36 Q14 16 26 16 Q38 16 48 36" stroke="#E8A020" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Bridge road/deck -->
+        <line x1="2" y1="36" x2="50" y2="36" stroke="#E8A020" stroke-width="2.5" stroke-linecap="round"/>
+        <!-- Bridge pillars -->
+        <line x1="14" y1="36" x2="14" y2="44" stroke="#E8A020" stroke-width="2" stroke-linecap="round"/>
+        <line x1="38" y1="36" x2="38" y2="44" stroke="#E8A020" stroke-width="2" stroke-linecap="round"/>
+        <!-- Bridge cables from top -->
+        <line x1="26" y1="16" x2="14" y2="36" stroke="#D4A030" stroke-width="1" opacity=".7"/>
+        <line x1="26" y1="16" x2="38" y2="36" stroke="#D4A030" stroke-width="1" opacity=".7"/>
+        <line x1="26" y1="16" x2="20" y2="36" stroke="#D4A030" stroke-width="1" opacity=".5"/>
+        <line x1="26" y1="16" x2="32" y2="36" stroke="#D4A030" stroke-width="1" opacity=".5"/>
+        <!-- Person (left - citizen) -->
+        <circle cx="8" cy="28" r="3" fill="#4A9EDB"/>
+        <path d="M8 31 L8 38" stroke="#4A9EDB" stroke-width="2" stroke-linecap="round"/>
+        <path d="M5 33 L11 33" stroke="#4A9EDB" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M8 38 L5 43" stroke="#4A9EDB" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M8 38 L11 43" stroke="#4A9EDB" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- Scales of justice (right - legal system) -->
+        <line x1="44" y1="22" x2="44" y2="38" stroke="#E8A020" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="40" y1="24" x2="48" y2="24" stroke="#E8A020" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="44" cy="22" r="1.5" fill="#E8A020"/>
+        <!-- Left pan -->
+        <path d="M38 24 Q37 28 40 29 Q43 28 42 24" fill="none" stroke="#E8A020" stroke-width="1.2"/>
+        <!-- Right pan -->
+        <path d="M46 24 Q45 28 48 29 Q51 28 50 24" fill="none" stroke="#E8A020" stroke-width="1.2"/>
+        <!-- Base of scales -->
+        <line x1="42" y1="38" x2="46" y2="38" stroke="#E8A020" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div class="logo-text">
+        <h1>FIR Filing Assistant</h1>
+        <p>BHARATIYA NYAYA SANHITA 2023 · LEGAL AID TOOL · INDIA</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="header-badge">NOT A SUBSTITUTE FOR A LAWYER</span>
+      <span class="header-emergency">⚠ EMERGENCY: DIAL 112</span>
+    </div>
+  </div>
+  <div class="header-strip">
+    <span class="strip-item">BNS 2023</span><span class="strip-sep">·</span>
+    <span class="strip-item">BNSS 2023</span><span class="strip-sep">·</span>
+    <span class="strip-item">BSA 2023</span><span class="strip-sep">·</span>
+    <span class="strip-item">IT ACT 2000</span><span class="strip-sep">·</span>
+    <span class="strip-item">POCSO ACT</span><span class="strip-sep">·</span>
+    <span class="strip-item">NALSA GUIDELINES</span><span class="strip-sep">·</span>
+    <span class="strip-item">D.K. BASU GUIDELINES</span>
+  </div>
+</header>
+
+<div class="app">
+  <aside class="ref-panel">
+    <div class="panel-header">⚖ Legal Reference</div>
+    <div class="ref-tabs">
+      <button class="rtab on" onclick="switchTab('latin',this)">Latin</button>
+      <button class="rtab" onclick="switchTab('rights',this)">Rights</button>
+      <button class="rtab" onclick="switchTab('sections',this)">BNS</button>
+    </div>
+    <div class="ref-content">
+      <div class="ref-section on" id="tab-latin">
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5;font-family:'IBM Plex Mono',monospace">Click any term to expand.</p>
+        <div id="latin-cards"></div>
+      </div>
+      <div class="ref-section" id="tab-rights"><div id="rights-cards"></div></div>
+      <div class="ref-section" id="tab-sections">
+        <p style="font-size:11px;color:var(--text3);margin-bottom:8px;line-height:1.5;font-family:'IBM Plex Mono',monospace">BNS 2023 · IPC shown alongside.</p>
+        <div id="sections-cards"></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="chat-area">
+    <div class="chat-messages" id="chat">
+      <div class="api-setup" id="api-setup">
+        <p><strong>Enter your Groq API key</strong> to activate the AI assistant. Stored only in your browser session — never sent to any server.</p>
+        <div class="api-row">
+          <input type="password" id="api-key-input" placeholder="Paste your Groq API key (gsk_...)" />
+          <button onclick="saveKey()">Connect</button>
+        </div>
+        <p class="disclaimer">Free key at console.groq.com · Uses LLaMA 3.3 70B · Not logged or stored.</p>
+      </div>
+
+      <div class="welcome">
+        <div class="welcome-header">
+          <div>
+            <h2>🇮🇳 FIR Filing Assistant</h2>
+            <div class="welcome-sub">POWERED BY BNS / IPC · NALSA · BNSS 2023</div>
+          </div>
+        </div>
+        <p>Describe what happened in your own words — in English or Hindi — and this assistant will help you draft a proper FIR, identify relevant BNS/IPC sections, and direct you to the right police station.</p>
+        <div class="disclaimer-bar">⚠ Legal guidance tool only. Not a substitute for a lawyer. In emergencies call 112.</div>
+        <div class="steps">
+          <div class="step"><div class="step-num">STEP 01</div><div class="step-text">Describe the incident — what, where, when, who was involved</div></div>
+          <div class="step"><div class="step-num">STEP 02</div><div class="step-text">Assistant identifies BNS sections and drafts FIR language</div></div>
+          <div class="step"><div class="step-num">STEP 03</div><div class="step-text">Review the draft and take it to the nearest police station</div></div>
+          <div class="step"><div class="step-num">STEP 04</div><div class="step-text">If police refuse, approach a Magistrate under BNSS Section 175</div></div>
+        </div>
+        <div class="starter-btns">
+          <button class="starter" onclick="sendStarter(this)">Phone theft / snatching</button>
+          <button class="starter" onclick="sendStarter(this)">Online fraud / cyber crime</button>
+          <button class="starter" onclick="sendStarter(this)">Physical assault / maarpit</button>
+          <button class="starter" onclick="sendStarter(this)">Domestic violence</button>
+          <button class="starter" onclick="sendStarter(this)">Harassment at workplace</button>
+          <button class="starter" onclick="sendStarter(this)">Property / land dispute</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <div class="input-wrap">
+        <textarea id="user-input" rows="1" placeholder="Describe the incident in detail... (English or Hindi)" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      </div>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </main>
+</div>
+
+<script>
+const LATIN_TERMS=[
+  {term:"Habeas Corpus",meaning:"You may have the body",body:"A writ demanding a person under arrest be brought before a court. Filed under Article 32 (Supreme Court) or Article 226 (High Court). Used when someone is illegally detained by police or the state."},
+  {term:"Suo Motu",meaning:"On its own motion",body:"When a court takes up a case on its own without a petition. The Supreme Court and High Courts frequently take suo motu cognizance of serious public interest matters."},
+  {term:"Prima Facie",meaning:"At first sight",body:"Evidence sufficient on its face to establish a fact unless rebutted. Police need prima facie evidence to arrest. A court takes cognizance of an FIR if it shows prima facie commission of an offence."},
+  {term:"Locus Standi",meaning:"Right to stand before court",body:"The legal right to bring an action in court. In FIR cases, the informant has locus standi. In PILs, any public-spirited citizen has locus standi."},
+  {term:"Ex Parte",meaning:"From one party only",body:"An order granted in the absence of one party. Courts may grant ex parte injunctions in urgent matters — e.g. to stop destruction of evidence."},
+  {term:"In Camera",meaning:"In private / in chamber",body:"Proceedings conducted privately, not in open court. Sexual assault and POCSO cases are mandatorily heard in camera in India to protect the victim's identity."},
+  {term:"Cognizable Offence",meaning:"Police can arrest without warrant",body:"Offences like murder, rape, robbery allow police to arrest without a warrant and investigate without court permission. An FIR must be registered for all cognizable offences under BNSS."},
+  {term:"Non-Cognizable Offence",meaning:"Requires warrant for arrest",body:"Police cannot arrest without a magistrate's warrant. A complaint is filed instead of an FIR. Police need court permission to investigate."},
+  {term:"Chargesheet",meaning:"Police report to court — not the FIR",body:"Under BNSS Section 193, police must file a chargesheet within 60-90 days of arrest. If no case found, they file a closure report. You can protest a closure report as the informant."},
+  {term:"Bail",meaning:"Conditional release from custody",body:"Bailable offences: bail is a right. Non-bailable: only a magistrate can grant bail. Anticipatory bail under Section 482 BNSS can be sought before arrest. Bail is the rule, jail is the exception — Supreme Court."},
+  {term:"Res Judicata",meaning:"The matter is already judged",body:"A decided case cannot be reopened. In criminal law: Double Jeopardy — Article 20(2): no person shall be prosecuted twice for the same offence."},
+  {term:"Caveat Emptor",meaning:"Let the buyer beware",body:"Originating in civil law. Relevant in consumer fraud and e-commerce cheating cases under BNS Section 318."},
+];
+const YOUR_RIGHTS=[
+  {badge:"rb-fund",label:"FUNDAMENTAL RIGHT",title:"Right to be informed of grounds of arrest",desc:"Article 22(1) + BNSS Section 47: You must be told why you are being arrested in a language you understand."},
+  {badge:"rb-arrest",label:"RIGHT ON ARREST",title:"Right to meet a lawyer of your choice",desc:"Article 22(1): Every arrested person has the right to consult a lawyer. Free legal aid is available from NALSA."},
+  {badge:"rb-arrest",label:"RIGHT ON ARREST",title:"Right to be produced before Magistrate within 24 hours",desc:"Article 22(2) + BNSS Section 57: Police must produce you before the nearest Magistrate within 24 hours of arrest."},
+  {badge:"rb-fund",label:"FUNDAMENTAL RIGHT",title:"Right against self-incrimination",desc:"Article 20(3): You cannot be compelled to be a witness against yourself. A confession to police is not admissible under BNSS."},
+  {badge:"rb-fir",label:"FIR RIGHT",title:"Zero FIR — register anywhere",desc:"Police must register an FIR for any cognizable offence regardless of jurisdiction. Refusal is an offence under BNSS Section 173."},
+  {badge:"rb-fir",label:"FIR RIGHT",title:"Right to a free copy of your FIR",desc:"BNSS Section 173(2): You are entitled to a free copy of your FIR immediately. Do not leave without it."},
+  {badge:"rb-fir",label:"FIR RIGHT",title:"Right to approach Magistrate if police refuse",desc:"BNSS Section 175: If police refuse your FIR, approach a Judicial Magistrate who can direct police to register and investigate."},
+  {badge:"rb-fund",label:"FUNDAMENTAL RIGHT",title:"Right to dignity — no torture",desc:"Article 21: Custodial torture is unconstitutional. D.K. Basu guidelines require no torture, officer ID, medical examination, family notification."},
+  {badge:"rb-arrest",label:"WOMEN'S RIGHT",title:"Special protections for women",desc:"A woman can only be arrested by a female officer. Between 6 PM and 6 AM, arrest requires a written Magistrate order."},
+];
+const BNS_SECTIONS=[
+  {tag:"OFFENCE AGAINST BODY",sections:[
+    {bns:"103",ipc:"302",label:"Murder"},
+    {bns:"109",ipc:"307",label:"Attempt to murder"},
+    {bns:"115",ipc:"323",label:"Voluntarily causing hurt"},
+    {bns:"117",ipc:"325",label:"Grievous hurt"},
+    {bns:"70",ipc:"376",label:"Rape"},
+    {bns:"74",ipc:"354",label:"Assault on woman"},
+    {bns:"79",ipc:"354D",label:"Stalking"},
+    {bns:"85",ipc:"498A",label:"Cruelty by husband / in-laws"},
+  ]},
+  {tag:"OFFENCE AGAINST PROPERTY",sections:[
+    {bns:"303",ipc:"379",label:"Theft"},
+    {bns:"304",ipc:"380",label:"Theft in dwelling"},
+    {bns:"309",ipc:"392",label:"Robbery"},
+    {bns:"310",ipc:"395",label:"Dacoity"},
+    {bns:"316",ipc:"406",label:"Criminal breach of trust"},
+    {bns:"318",ipc:"420",label:"Cheating / fraud"},
+    {bns:"329",ipc:"441",label:"Criminal trespass"},
+  ]},
+  {tag:"CYBER CRIME",sections:[
+    {bns:"318",ipc:"420",label:"Online fraud (+ IT Act S.66D)"},
+    {bns:"351",ipc:"503",label:"Online threats"},
+    {bns:"79",ipc:"354D",label:"Cyber stalking"},
+    {bns:"",ipc:"",label:"IT Act S.66C — Identity theft"},
+    {bns:"",ipc:"",label:"IT Act S.67 — Obscene content"},
+  ]},
+  {tag:"PUBLIC ORDER",sections:[
+    {bns:"189",ipc:"141",label:"Unlawful assembly"},
+    {bns:"190",ipc:"147",label:"Rioting"},
+    {bns:"197",ipc:"153A",label:"Promoting enmity"},
+    {bns:"353",ipc:"505",label:"Public mischief"},
+  ]},
+];
+
+function renderLatin(){
+  document.getElementById("latin-cards").innerHTML=LATIN_TERMS.map(t=>`
+    <div class="rcard" onclick="this.classList.toggle('open')">
+      <div class="rcard-term">${t.term}</div>
+      <div class="rcard-meaning">"${t.meaning}"</div>
+      <div class="rcard-body">${t.body}</div>
+    </div>`).join("");
+}
+function renderRights(){
+  document.getElementById("rights-cards").innerHTML=YOUR_RIGHTS.map(r=>`
+    <div style="margin-bottom:10px">
+      <span class="right-badge ${r.badge}">${r.label}</span>
+      <div class="right-title">${r.title}</div>
+      <div class="right-desc">${r.desc}</div>
+    </div><hr class="divider">`).join("");
+}
+function renderSections(){
+  document.getElementById("sections-cards").innerHTML=BNS_SECTIONS.map(g=>`
+    <div style="margin-bottom:12px">
+      <div class="sec-group-title">${g.tag}</div>
+      ${g.sections.map(s=>`
+        <div class="sec-row">
+          <span class="sec-label">${s.label}</span>
+          <span class="sec-tags">
+            ${s.bns?`<span class="hl-bns">BNS §${s.bns}</span>`:""}
+            ${s.ipc?`<span class="hl-ipc">IPC §${s.ipc}</span>`:""}
+          </span>
+        </div>`).join("")}
+    </div>`).join("");
+}
+function switchTab(id,btn){
+  document.querySelectorAll(".rtab").forEach(t=>t.classList.remove("on"));
+  document.querySelectorAll(".ref-section").forEach(s=>s.classList.remove("on"));
+  btn.classList.add("on");
+  document.getElementById("tab-"+id).classList.add("on");
+}
+renderLatin();renderRights();renderSections();
+
+let apiKey="";
+let messages=[];
+
+const SYSTEM_PROMPT=`You are an expert FIR filing assistant for India, trained in the Bharatiya Nyaya Sanhita (BNS) 2023 which replaced the Indian Penal Code (IPC), the Bharatiya Nagarik Suraksha Sanhita (BNSS) 2023 which replaced CrPC, and the Bharatiya Sakshya Adhiniyam (BSA) 2023.
+
+Your role:
+1. When a user describes an incident, ask clarifying questions to gather: WHAT happened, WHEN (date/time), WHERE (specific location, district, state), WHO was involved, any WITNESSES, and any EVIDENCE.
+2. Once you have enough detail, identify the correct BNS sections (mention old IPC section in brackets for reference).
+3. Draft a properly worded FIR in formal legal language with: To The Station House Officer, Subject line, Complainant details (use placeholders like [YOUR NAME] [YOUR ADDRESS] [YOUR PHONE]), Date and time of incident, Detailed narrative of offence, Accused details if known, Witnesses if any, List of evidence, Prayer for action.
+4. Advise which type of police station to go to (regular, cyber cell, women cell, economic offences wing).
+5. If police refuse to register FIR, explain Zero FIR rights and Magistrate route under BNSS Section 175.
+6. In emergencies always advise to call 112 first.
+7. Always cite specific BNS sections, Article numbers, and Act names clearly in your response.
+
+Always be compassionate and trauma-informed.
+Remind users this is a drafting aid not legal advice.
+Respond in the same language the user writes in (Hindi or English).
+Separate the FIR draft using exactly: ---FIR_DRAFT_START--- and ---FIR_DRAFT_END---`;
+
+function saveKey(){
+  const k=document.getElementById("api-key-input").value.trim();
+  if(k.length<10){alert("Please enter a valid API key");return}
+  apiKey=k;
+  document.getElementById("api-setup").style.display="none";
+  addBotMessage("✅ Connected. I am your FIR filing assistant. Please describe the incident in detail — what happened, when, where, and who was involved. You can write in English or Hindi.");
+}
+function sendStarter(btn){
+  document.getElementById("user-input").value=btn.textContent;
+  sendMessage();
+}
+function handleKey(e){
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage()}
+}
+function autoResize(el){
+  el.style.height="auto";
+  el.style.height=Math.min(el.scrollHeight,120)+"px";
+}
+async function sendMessage(){
+  const input=document.getElementById("user-input");
+  const text=input.value.trim();
+  if(!text)return;
+  if(!apiKey){alert("Please enter your API key first.");return}
+  addUserMessage(text);
+  messages.push({role:"user",content:text});
+  input.value="";input.style.height="auto";
+  const sendBtn=document.getElementById("send-btn");
+  sendBtn.disabled=true;
+  const typingId=addTypingIndicator();
+  try{
+    const res=await fetch("https://api.groq.com/openai/v1/chat/completions",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${apiKey}`},
+      body:JSON.stringify({
+        model:"llama-3.3-70b-versatile",
+        messages:[{role:"system",content:SYSTEM_PROMPT},...messages.map(m=>({role:m.role==="assistant"?"assistant":"user",content:m.content}))]
+      })
+    });
+    removeTypingIndicator(typingId);
+    if(!res.ok){
+      const err=await res.json();
+      addBotMessage("⚠ API Error: "+(err.error?.message||"Unknown error. Check your API key."));
+      sendBtn.disabled=false;return;
+    }
+    const data=await res.json();
+    const reply=data.choices[0].message.content;
+    messages.push({role:"assistant",content:reply});
+    renderBotReply(reply);
+  }catch(e){
+    removeTypingIndicator(typingId);
+    addBotMessage("⚠ Network error. Please check your connection.");
+  }
+  sendBtn.disabled=false;
+}
+function addUserMessage(text){
+  const chat=document.getElementById("chat");
+  const div=document.createElement("div");
+  div.className="msg user";
+  div.innerHTML=`<div class="msg-avatar">YOU</div><div class="msg-bubble"><div class="msg-label">You</div>${escHtml(text)}</div>`;
+  chat.appendChild(div);scrollChat();
+}
+function addBotMessage(html){
+  const chat=document.getElementById("chat");
+  const div=document.createElement("div");
+  div.className="msg bot";
+  div.innerHTML=`<div class="msg-avatar">FIR</div><div class="msg-bubble"><div class="msg-label">Legal Assistant</div>${html}</div>`;
+  chat.appendChild(div);scrollChat();
+  return div;
+}
+function renderBotReply(text){
+  const draftMatch=text.match(/---FIR_DRAFT_START---([\s\S]*?)---FIR_DRAFT_END---/);
+  let displayText=text;
+  let draftText="";
+  if(draftMatch){
+    draftText=draftMatch[1].trim();
+    displayText=text.replace(/---FIR_DRAFT_START---[\s\S]*?---FIR_DRAFT_END---/,"");
+  }
+  let html=formatText(displayText);
+  if(draftText){
+    html+=`<div class="fir-draft-wrap">
+      <div class="fir-draft-header">
+        <span>📄 FIR DRAFT — REVIEW BEFORE SUBMISSION</span>
+        <span style="font-size:10px;color:#8A9AAA">Fill [PLACEHOLDERS] with your details</span>
+      </div>
+      <div class="fir-draft" id="fir-content">${escHtml(draftText)}</div>
+      <div class="fir-actions">
+        <button class="btn-copy" onclick="copyFIR()">📋 Copy Draft</button>
+        <button class="btn-print" onclick="printFIR()">🖨 Print / PDF</button>
+      </div>
+    </div>`;
+  }
+  addBotMessage(html);
+}
+function formatText(text){
+  return text
+    .replace(/\*\*(.*?)\*\*/g,"<strong style='color:var(--text)'>$1</strong>")
+    .replace(/BNS Section (\d+[A-Z]?)/g,'<span class="hl-bns">BNS §$1</span>')
+    .replace(/Section (\d+[A-Z]?) (?:of |of the )?BNS/g,'<span class="hl-bns">BNS §$1</span>')
+    .replace(/BNSS Section (\d+[A-Z]?)/g,'<span class="hl-act">BNSS §$1</span>')
+    .replace(/Section (\d+[A-Z]?) (?:of |of the )?BNSS/g,'<span class="hl-act">BNSS §$1</span>')
+    .replace(/IPC Section (\d+[A-Z]?)/g,'<span class="hl-ipc">IPC §$1</span>')
+    .replace(/Section (\d+[A-Z]?) (?:of |of the )?IPC/g,'<span class="hl-ipc">IPC §$1</span>')
+    .replace(/Article (\d+[A-Z]?(?:\(\d+\))?)/g,'<span class="hl-article">Art. $1</span>')
+    .replace(/IT Act(?:,? Section (\d+[A-Z]?))?/g,(m,s)=>s?`<span class="hl-act">IT Act §${s}</span>`:`<span class="hl-act">IT Act</span>`)
+    .replace(/POCSO Act/g,'<span class="hl-act">POCSO Act</span>')
+    .replace(/NALSA/g,'<span class="hl-act">NALSA</span>')
+    .replace(/\n\n/g,"<br><br>")
+    .replace(/\n- /g,"<br>• ")
+    .replace(/\n(\d+)\. /g,"<br><strong style='color:var(--saffron)'>$1.</strong> ");
+}
+function addTypingIndicator(){
+  const chat=document.getElementById("chat");
+  const div=document.createElement("div");
+  const id="t"+Date.now();
+  div.id=id;div.className="msg bot";
+  div.innerHTML=`<div class="msg-avatar">FIR</div><div class="msg-bubble"><div class="msg-label">Legal Assistant</div><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  chat.appendChild(div);scrollChat();
+  return id;
+}
+function removeTypingIndicator(id){const el=document.getElementById(id);if(el)el.remove();}
+function copyFIR(){
+  const el=document.getElementById("fir-content");
+  if(el){navigator.clipboard.writeText(el.textContent);alert("FIR draft copied to clipboard!")}
+}
+function printFIR(){
+  const el=document.getElementById("fir-content");
+  if(!el)return;
+  const w=window.open("","_blank");
+  w.document.write(`<html><head><title>FIR Draft</title><style>body{font-family:Georgia,serif;padding:3rem;line-height:2;font-size:14px;max-width:700px;margin:0 auto}h2{font-size:20px;margin-bottom:.5rem;font-family:Georgia,serif}p.sub{color:#888;font-size:11px;margin-bottom:2rem;font-family:monospace}pre{white-space:pre-wrap;font-family:Georgia,serif;line-height:2;font-size:14px}hr{border:none;border-top:1px solid #ddd;margin:1rem 0}</style></head><body><h2>FIR Draft</h2><hr><p class="sub">Generated by FIR Filing Assistant · Review with a lawyer before submission · Fill in all [PLACEHOLDERS]</p><pre>${el.textContent}</pre></body></html>`);
+  w.document.close();w.print();
+}
+function scrollChat(){
+  const chat=document.getElementById("chat");
+  setTimeout(()=>chat.scrollTop=chat.scrollHeight,100);
+}
+function escHtml(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+</script>
+</body>
+</html>
